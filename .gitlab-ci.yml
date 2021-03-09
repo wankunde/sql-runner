@@ -1,0 +1,51 @@
+stages:
+  - deploy
+
+.build-deploy:
+  script:
+    - 'mvn clean package'
+    - 'tar zxvf ./target/above-board-2.0-bin.tar.gz -C ./target'
+    - 'rm -rf /data/ws/above-board-2.0'
+    - 'mv ./target/above-board-2.0 /data/ws/above-board-2.0'
+  stage: deploy
+  when: manual
+
+uat-build-deploy:
+  extends: .build-deploy
+  tags:
+    - uat-nuc1
+
+stg-build-deploy:
+  extends: .build-deploy
+  tags:
+    - stg-gw1
+
+prd-build-deploy:
+  extends: .build-deploy
+  tags:
+    - prd-gw1
+    
+pre-build-deploy:
+  extends: .build-deploy
+  tags:
+    - pre-gw1
+    
+nta-build-deploy:
+  extends: .build-deploy
+  tags:
+    - nta-gw1
+
+prg-build-deploy:
+  extends: .build-deploy
+  tags:
+    - prg-gw1
+    
+sth-build-deploy:
+  extends: .build-deploy
+  tags:
+    - sth-gw1
+
+jdc-build-deploy:
+  extends: .build-deploy
+  tags:
+    - jdc-gw1

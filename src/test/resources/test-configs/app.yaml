@@ -1,0 +1,87 @@
+app_name: bot-conversation-summary
+app_id: 223
+# Invalid field, to test ignore property.
+app_type: stream
+rules:
+  - source: spark-sql
+    sinks: tidb_dws_bot_conversation_summary
+    sqls:
+      - INSERT OVERWRITE TABLE tb_bot_conversation.dws_bot_conversation_summary
+        SELECT
+          store_id,
+          buyer_nick,
+          assistant_nick,
+          query,
+          query_time_ms,
+          cast(query_time_ms AS TIMESTAMP) query_timestamp,
+          domain,
+          json_path_to_array(to_json(query_slots), "$[?(@.label=='item_spu')].value") spu_list,
+          json_path_to_array(to_json(intents), "$[*].id") intent_id_list,
+          json_path_to_array(to_json(intents), "$[*].label") intent_label_list,
+          matched_intent.id matched_intent_id,
+          matched_intent.label matched_intent_label,
+          reply_time_ms,
+          cast(reply_time_ms AS TIMESTAMP) reply_timestamp,
+          candidate,
+          entry.id entry_id,
+          entry.label entry_label,
+          template_id,
+          json_path_to_array(to_json(reply_sentences), "$[*].content") reply_sentences,
+          array_contains(json_split(json_path_to_array(to_json(reply_sentences), "$[*].status")), 'RECEIVE') is_reply_received,
+          processing_result,
+          action,
+          result_reason,
+          service_mode,
+          reply_type,
+          business_type,
+          transfer_enabled,
+          assistant_group_id,
+          test_win_mode,
+          business_id,
+          env,
+          is_mono_turn,
+          from_unixtime(cast(reply_time_ms/1000 AS BIGINT), 'yyyyMMdd') dt
+        FROM tb_bot_conversation.dwd_bot_conversation_detail
+        WHERE dt='${date|yyyyMMdd}'
+      - INSERT INTO tidb.dws_bot_conversation_summary
+        SELECT
+          business_id,
+          store_id,
+          buyer_nick,
+          assistant_nick,
+          query,
+          query_timestamp,
+          domain,
+          spu_list,
+          intent_id_list,
+          intent_label_list,
+          matched_intent_id,
+          matched_intent_label,
+          reply_timestamp,
+          candidate,
+          entry_id,
+          entry_label,
+          template_id,
+          reply_sentences,
+          is_reply_received,
+          processing_result,
+          action,
+          result_reason,
+          service_mode,
+          reply_type,
+          business_type,
+          transfer_enabled,
+          assistant_group_id,
+          test_win_mode,
+          env,
+          is_mono_turn
+        FROM tb_bot_conversation.dws_bot_conversation_summary
+        WHERE dt='${date|yyyyMMdd}'
+sinks:
+  - name: tidb_dws_bot_conversation_summary
+    type: mysql_upsert
+    tableName: dws_bot_conversation_summary
+    tag: tidb
+    tidb.username: bot_conversation_rw
+    unique.keys: business_id
+    parallel: true

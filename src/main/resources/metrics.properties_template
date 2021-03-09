@@ -1,0 +1,9 @@
+# USING : --files metrics.properties
+*.sink.graphite.class=org.apache.spark.metrics.sink.GraphiteSink
+*.sink.graphite.host=graphite_host
+*.sink.graphite.port=2003
+*.sink.graphite.prefix=java
+master.source.jvm.class=org.apache.spark.metrics.source.JvmSource
+worker.source.jvm.class=org.apache.spark.metrics.source.JvmSource
+driver.source.jvm.class=org.apache.spark.metrics.source.JvmSource
+executor.source.jvm.class=org.apache.spark.metrics.source.JvmSource

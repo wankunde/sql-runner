@@ -1,0 +1,65 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  <id>bin</id>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>README*</include>
+        <include>LICENSE*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/bin</directory>
+      <outputDirectory>/bin</outputDirectory>
+      <includes>
+        <include>/**</include>
+      </includes>
+      <lineEnding>unix</lineEnding>
+      <fileMode>0777</fileMode> <!-- 所有文件文件权限为777 -->
+      <directoryMode>0755</directoryMode> <!-- 所有目录权限为777  -->
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources</directory>
+      <outputDirectory>/conf</outputDirectory>
+      <includes>
+        <include>/**</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+  <dependencySets>
+    <dependencySet>
+      <useProjectArtifact>true</useProjectArtifact>
+      <outputDirectory>/lib</outputDirectory>
+      <unpack>false</unpack>
+      <scope>runtime</scope>
+      <excludes>
+        <exclude>mysql:mysql-connector-java</exclude>
+        <exclude>io.confluent:kafka-avro-serializer</exclude>
+        <exclude>org.apache.kafka:kafka-clients</exclude>
+        <exclude>io.confluent:kafka-schema-registry-client</exclude>
+        <exclude>io.confluent:common-config</exclude>
+        <exclude>io.confluent:common-utils</exclude>
+        <exclude>com.twitter:parquet-hadoop-bundle</exclude>
+        <exclude>io.dropwizard.metrics:*</exclude>
+        <exclude>org.glassfish.jersey.core:*</exclude>
+        <exclude>org.glassfish.jersey.containers:*</exclude>
+        <exclude>org.glassfish.jersey.inject:*</exclude>
+        <exclude>com.fasterxml.jackson.core:*</exclude>
+        <exclude>org.apache.thrift:*</exclude>
+        <exclude>org.apache.parquet:*</exclude>
+        <exclude>org.apache.orc:*</exclude>
+        <exclude>org.apache.avro:*</exclude>
+        <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.apache.hive:*</exclude>
+        <exclude>org.apache.spark:*</exclude>
+      </excludes>
+    </dependencySet>
+  </dependencySets>
+</assembly>
