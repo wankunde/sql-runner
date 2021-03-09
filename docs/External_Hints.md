@@ -44,7 +44,7 @@ WHERE   id < 50;
 * TABLE_NAME 和 RELATION_NAME: 如果没有配置`RELATION_NAME`，`RELATION_NAME`=`TABLE_NAME`，把`TAG`数据库中的`TABLE_NAME`表创建为一个名为`RELATION_NAME` 的Spark视图。
 
 辅助参数说明:
-* tag : 结果存储的mysql数据库标识，是在above-board项目中配置的数据库标识
+* tag : 结果存储的mysql数据库标识，是在项目Apollo中配置的数据库标识
 * tableName : 需要操作的表名
 * tableAlias : JDBC表别名，即允许对JDBC输出表取别名。非必须参数，不填写时，和tableName参数保持一致。
 * unique.keys : 必填参数，数据插入和更新的表的主键字段。有多个字段时，使用逗号分隔。
