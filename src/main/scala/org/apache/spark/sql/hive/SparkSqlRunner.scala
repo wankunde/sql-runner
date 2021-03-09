@@ -19,6 +19,8 @@ import org.apache.spark.sql.udf.UDFFactory
 import org.apache.spark.sql.util.{Logging, NextIterator}
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.util.{MutableURLClassLoader, Utils}
+import org.apache.sql.runner.callback.{DataCallBackFactory, QueryResult}
+import org.apache.sql.runner.container.ConfigContainer
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
@@ -32,7 +34,7 @@ class SparkSqlRunner(implicit var spark: SparkSession) extends Logging {
     val queryExecution = {
       val logicalPlan = spark.sessionState.sqlParser.parsePlan(sqlText)
       val qe =
-        if (Configuration.getOrElse("rule.spark.sinksize", "0").toInt > 0) {
+        if (ConfigContainer.getOrElse("rule.spark.sinksize", "0").toInt > 0) {
           new QueryExecution(spark, Repartition(1, shuffle = true, logicalPlan))
         } else {
           new QueryExecution(spark, logicalPlan)
@@ -132,7 +134,7 @@ object SparkSqlRunner extends Logging {
         sparkConf.getOption("spark.app.name")
           .getOrElse("SparkSQLRunner")
       }
-      sparkConf.set("spark.yarn.queue", Configuration.getOrElse("spark.yarn.queue", "default"))
+      sparkConf.set("spark.yarn.queue", ConfigContainer.getOrElse("spark.yarn.queue", "default"))
       sparkConf.setAppName(appName)
       sparkConf.set("spark.sql.extensions", "org.apache.spark.sql.optimizer.InsightExtensions")
       sparkConf.set("spark.kryoserializer.buffer", "102400K")
@@ -141,7 +143,7 @@ object SparkSqlRunner extends Logging {
       sparkConf.set("spark.executor.memory", "2g")
       sparkConf.set("spark.executor.memoryOverhead", "1g")
 
-      Configuration.valueMap.get
+      ConfigContainer.valueMap.get
         .filter(config => config._1.startsWith("spark"))
         .foreach(config => sparkConf.set(config._1, config._2))
 

@@ -5,6 +5,9 @@ import org.apache.spark.sql.QueryTest
 import org.apache.spark.sql.hive.SparkSqlRunner
 import org.apache.spark.sql.test.SQLTestData.TestData
 import org.apache.spark.sql.test.SQLTestUtils
+import org.apache.sql.runner.callback.DataCallBackFactory
+import org.apache.sql.runner.command.SqlCommand
+import org.apache.sql.runner.container.CollectorContainer
 import org.scalatest.Matchers
 
 /**

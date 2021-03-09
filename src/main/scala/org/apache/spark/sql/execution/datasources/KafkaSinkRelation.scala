@@ -16,6 +16,7 @@ import org.apache.spark.sql.sources.{BaseRelation, InsertableRelation}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.util.{AvroField, GenericAvroSchema}
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.sql.runner.metrics.ReporterTrait
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -29,7 +30,7 @@ case class KafkaSinkRelation(override val schema: StructType,
                              kafkaOptions: KafkaOptions)(@transient val sparkSession: SparkSession)
   extends BaseRelation
     with InsertableRelation
-    with MetricsSystem
+    with ReporterTrait
     with Logging {
 
   import kafkaOptions._

@@ -4,7 +4,9 @@ package org.apache.sql.runner.config
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-import org.apache.spark.sql.util.Logging
+import org.apache.spark.sql.util.{Logging, SystemVariables}
+import org.apache.sql.runner.container.{CollectorContainer, ConfigContainer}
+import org.apache.sql.runner.container.ConfigContainer.valueMap
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
@@ -12,13 +14,9 @@ import org.apache.spark.sql.util.Logging
  */
 class VariableSubstitution extends Logging {
 
-  val dateTime =
-    if (Configuration.getBatchTime() == null) {
-      LocalDateTime.now
-    }
-    else {
-      Configuration.getBatchTime()
-    }
+  val dateTime: LocalDateTime =
+    CollectorContainer.getOrElse(SystemVariables.BATCH_TIME, LocalDateTime.now)
+      .asInstanceOf[LocalDateTime]
 
   val timeExpr = """\$\{date([+-]?)(\d*)([YMDHSymdhs]?)[|]?([[-]|[_]|[:]|[\s*]|[a-zA-Z0-9]]*)\}""".r
 
@@ -125,8 +123,26 @@ class VariableSubstitution extends Logging {
           case ex: Exception =>
             throw new Exception(s"parameter $parameter cannot be parsed", ex)
         }
-      case _ => Configuration.getOrElse(parameter,
+      case _ => ConfigContainer.getOrElse(parameter,
         throw new Exception(s"parameter $parameter cannot be parsed"))
     }
   }
+}
+
+object VariableSubstitution {
+
+  def withSubstitution(body: VariableSubstitution => Unit): Unit = {
+    val substitution = new VariableSubstitution
+    val originConfigMap = valueMap.get()
+    val newConfigMap = originConfigMap.map {
+      case (k, v) => k -> substitution.substitute(v)
+    }
+    valueMap.set(newConfigMap)
+    try {
+      body(substitution)
+    } finally {
+      valueMap.set(originConfigMap)
+    }
+  }
+
 }

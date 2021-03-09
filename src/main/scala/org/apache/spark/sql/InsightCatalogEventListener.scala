@@ -11,6 +11,7 @@ import org.apache.spark.sql.execution.command.AnalyzePartitionCommand
 import org.apache.spark.sql.hive.HiveExternalCatalog.STATISTICS_NUM_ROWS
 import org.apache.spark.sql.util.{DQUtil, DingTalkUtil, Logging}
 import org.apache.spark.util.ThreadUtils
+import org.apache.sql.runner.metrics.ReporterTrait
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
@@ -23,7 +24,7 @@ import scala.math.BigDecimal.RoundingMode
  */
 case class InsightCatalogEventListener(implicit val spark: SparkSession)
   extends ExternalCatalogEventListener
-    with MetricsSystem
+    with ReporterTrait
     with Logging {
 
   implicit val catalogEventListenerContext =

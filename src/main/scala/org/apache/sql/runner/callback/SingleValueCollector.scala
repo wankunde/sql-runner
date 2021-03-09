@@ -3,6 +3,7 @@ package org.apache.sql.runner.callback
 
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.util.Logging
+import org.apache.sql.runner.container.CollectorContainer
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>

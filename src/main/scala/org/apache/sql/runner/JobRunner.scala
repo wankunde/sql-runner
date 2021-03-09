@@ -5,7 +5,10 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 import org.apache.spark.sql.plugin.{AsyncProfilePlugin, YourkitPlugin}
-import org.apache.spark.sql.util.Logging
+import org.apache.spark.sql.util.{Logging, SystemVariables}
+import org.apache.sql.runner.command.SqlCommand
+import org.apache.sql.runner.config.ApolloClient
+import org.apache.sql.runner.container.{CollectorContainer, ConfigContainer}
 
 import scala.reflect.io.File
 
@@ -20,35 +23,35 @@ object JobRunner extends ArgParser with Logging {
 
     // prepare for spark mode
     val distJars = Seq("above-board-2.0.jar").map(jar => s"lib/${jar}").mkString(",")
-    Configuration :+ ("spark.yarn.dist.jars", distJars)
-    if (!Configuration.contains("spark.yarn.queue")) {
-      Configuration :+ ("spark.yarn.queue", s"root.${File(jobFile).parent.name}")
+    ConfigContainer :+ ("spark.yarn.dist.jars", distJars)
+    if (!ConfigContainer.contains("spark.yarn.queue")) {
+      ConfigContainer :+ ("spark.yarn.queue", s"root.${File(jobFile).parent.name}")
     }
 
-    if (Configuration.getOrElse("spark.profile", "false").toBoolean) {
+    if (ConfigContainer.getOrElse("spark.profile", "false").toBoolean) {
       val profileShell = "hdfs:///deploy/config/profile.sh"
       val yourkitAgent = "hdfs:///deploy/config/libyjpagent.so"
 
-      Configuration.getOrElse("spark.profile.type", "jfr") match {
+      ConfigContainer.getOrElse("spark.profile.type", "jfr") match {
         case "yourkit" =>
-          Configuration :+ ("spark.profile.type", "snapshot")
-          Configuration :+ ("spark.yarn.dist.files", s"${profileShell},${yourkitAgent}")
-          Configuration :+ ("spark.yarn.dist.jars", s"${distJars},hdfs:///deploy/config/yjp-controller-api-redist.jar")
-          Configuration :+ ("spark.executor.extraJavaOptions", "-agentpath:libyjpagent.so=logdir=<LOG_DIR>,async_sampling_cpu")
-          Configuration :+ ("spark.executor.plugins", classOf[YourkitPlugin].getName)
+          ConfigContainer :+ ("spark.profile.type", "snapshot")
+          ConfigContainer :+ ("spark.yarn.dist.files", s"${profileShell},${yourkitAgent}")
+          ConfigContainer :+ ("spark.yarn.dist.jars", s"${distJars},hdfs:///deploy/config/yjp-controller-api-redist.jar")
+          ConfigContainer :+ ("spark.executor.extraJavaOptions", "-agentpath:libyjpagent.so=logdir=<LOG_DIR>,async_sampling_cpu")
+          ConfigContainer :+ ("spark.executor.plugins", classOf[YourkitPlugin].getName)
 
         case _ =>
-          Configuration :+ ("spark.yarn.dist.archives",
+          ConfigContainer :+ ("spark.yarn.dist.archives",
             "hdfs:///deploy/config/async-profiler/async-profiler.zip#async-profiler")
-          Configuration :+ ("spark.yarn.dist.files", profileShell)
-          Configuration :+ ("spark.executor.extraLibraryPath", "./async-profiler/build/")
-          Configuration :+ ("spark.executor.plugins", classOf[AsyncProfilePlugin].getName)
+          ConfigContainer :+ ("spark.yarn.dist.files", profileShell)
+          ConfigContainer :+ ("spark.executor.extraLibraryPath", "./async-profiler/build/")
+          ConfigContainer :+ ("spark.executor.plugins", classOf[AsyncProfilePlugin].getName)
       }
     }
 
     // 如果日期参数为空，时间设置为上一个执行周期
     if (startDate != None && endDate != None) {
-      batchTimesOpt = Configuration.get("period") match {
+      batchTimesOpt = ConfigContainer.get("period") match {
         case "minute" =>
           val rangeSize = ChronoUnit.MINUTES.between(startDate.get, endDate.get)
           Some(Range.inclusive(0, rangeSize.toInt, dateRangeStep).map(i => startDate.get.plusMinutes(i)))
@@ -65,7 +68,7 @@ object JobRunner extends ArgParser with Logging {
     }
     if (batchTimesOpt == None) {
       val defaultBatchTime = {
-        Configuration.get("period") match {
+        ConfigContainer.get("period") match {
           case "minute" =>
             val dt = LocalDateTime.now.minusMinutes(1)
             LocalDateTime.of(dt.getYear, dt.getMonth, dt.getDayOfMonth,
@@ -89,9 +92,9 @@ object JobRunner extends ArgParser with Logging {
 
     // real job
     batchTimesOpt.getOrElse(Seq[LocalDateTime]()).map { batchTime =>
-      Configuration.setBatchTime(batchTime)
+      CollectorContainer :+ (SystemVariables.BATCH_TIME, batchTime)
       logInfo(s"submitting job(batchTime = $batchTime)")
-      if (Configuration.contains("dryrun")) {
+      if (ConfigContainer.contains("dryrun")) {
         commands.foreach(_.dryrun())
       } else {
         commands.foreach(_.run())

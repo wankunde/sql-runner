@@ -4,6 +4,8 @@ package org.apache.sql.runner.command
 import org.apache.spark.sql.catalyst.analysis.UnresolvedAttribute
 import org.apache.spark.sql.catalyst.expressions.Literal
 import org.apache.spark.sql.catalyst.parser.CatalystSqlParser
+import org.apache.sql.runner.config.VariableSubstitution
+import org.apache.sql.runner.container.{CollectorContainer, ConfigContainer}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -74,12 +76,12 @@ case class IfCommand(sourceChars: SourceChars)
   }
 
   def doRun(isDryRun: Boolean): Unit = {
-    Configuration.withSubstitution(new VariableSubstitution) { substitution =>
+    VariableSubstitution.withSubstitution { substitution =>
       val ifCondition =
         CatalystSqlParser.parseExpression(substitution.substitute(ifConditionString)) transform {
           case e: UnresolvedAttribute =>
             Literal(
-              CollectorContainer.getOrElse(e.name, Configuration.get(e.name))
+              CollectorContainer.getOrElse(e.name, ConfigContainer.get(e.name))
             )
 
           case e => e

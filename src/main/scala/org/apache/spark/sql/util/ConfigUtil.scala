@@ -1,6 +1,8 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
 package org.apache.spark.sql.util
 
+import org.apache.sql.runner.container.ConfigContainer
+
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2020-02-17.
@@ -22,10 +24,10 @@ object ConfigUtil {
 
   def withConfigs[T](configs: (String, String)*)(func: => T): T = {
     try {
-      configs.foreach(config => Configuration :+ (config._1, config._2))
+      configs.foreach(config => ConfigContainer :+ (config._1, config._2))
       func
     } finally {
-      configs.foreach(config => Configuration - config._1)
+      configs.foreach(config => ConfigContainer - config._1)
     }
   }
 }

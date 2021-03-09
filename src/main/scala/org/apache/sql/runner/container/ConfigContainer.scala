@@ -3,6 +3,6 @@ package org.apache.sql.runner.container
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
- * @date 2021-03-08.
+ * @date 2020-03-06.
  */
-object CollectorContainer extends ContainerTrait[String, Any]
+object ConfigContainer extends ContainerTrait[String, String]

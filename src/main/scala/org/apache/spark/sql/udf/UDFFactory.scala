@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.util.Logging
+import org.apache.sql.runner.container.ConfigContainer
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
@@ -18,7 +19,7 @@ object UDFFactory extends Logging {
   def registerExternalUDFs(spark: SparkSession): Unit = {
     spark.udf.register("transform_date", DateFormatUDF.transform_date_udf)
 
-    Configuration.getOption(EXTERNAL_UDFS).map {
+    ConfigContainer.getOption(EXTERNAL_UDFS).map {
       case udfClasses: String =>
         spark.sessionState.resourceLoader.addJar("hdfs:///deploy/config/biz-udfs-1.0.jar")
 

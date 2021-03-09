@@ -7,6 +7,7 @@ import org.apache.spark.sql.InsightSuiteUtils._
 import org.apache.spark.sql.hive.SparkSqlRunner
 import org.apache.spark.sql.hive.test.TestHiveSingleton
 import org.apache.spark.sql.test.SQLTestUtils
+import org.apache.sql.runner.command.SqlCommand
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>

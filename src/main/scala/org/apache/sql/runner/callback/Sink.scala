@@ -4,12 +4,13 @@ package org.apache.sql.runner.callback
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.util.Logging
+import org.apache.sql.runner.metrics.ReporterTrait
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2019-12-12.
  */
-trait Sink extends DataCallBack with MetricsSystem with Logging {
+trait Sink extends DataCallBack with ReporterTrait with Logging {
 
   val config: Map[String, String]
 

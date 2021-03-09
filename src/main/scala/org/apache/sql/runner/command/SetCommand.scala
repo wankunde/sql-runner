@@ -1,6 +1,8 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
 package org.apache.sql.runner.command
 
+import org.apache.sql.runner.container.ConfigContainer
+
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2021-02-24.
@@ -21,7 +23,7 @@ case class SetCommand(sourceChars: SourceChars) extends BaseCommand(sourceChars)
   override def toString: String = s"${CommandFactory.setPrefix} $key = $value;"
 
   override def run(): Unit = {
-    Configuration :+ (key, value)
+    ConfigContainer :+ (key, value)
     logInfo(s"\n${this.toString}")
   }
 }

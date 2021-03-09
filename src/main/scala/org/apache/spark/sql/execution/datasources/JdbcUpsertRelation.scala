@@ -11,6 +11,7 @@ import org.apache.spark.sql.jdbc.JdbcDialects
 import org.apache.spark.sql.sources.{BaseRelation, Filter, InsertableRelation}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
+import org.apache.sql.runner.metrics.ReporterTrait
 
 import scala.collection.mutable
 
@@ -23,7 +24,7 @@ case class JdbcUpsertRelation(override val schema: StructType,
                               jdbcOptions: JDBCOptions)(@transient val sparkSession: SparkSession)
   extends BaseRelation
     with InsertableRelation
-    with MetricsSystem
+    with ReporterTrait
     with Logging {
 
   override def sqlContext: SQLContext = sparkSession.sqlContext

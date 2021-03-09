@@ -4,6 +4,9 @@ package org.apache.sql.runner.command
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.hive.SparkSqlRunner
 import org.apache.spark.sql.util.{Logging, SystemVariables}
+import org.apache.sql.runner.callback.DataCallBackFactory
+import org.apache.sql.runner.config.VariableSubstitution
+import org.apache.sql.runner.container.ConfigContainer
 
 import scala.collection.JavaConverters._
 
@@ -34,7 +37,7 @@ case class SqlCommand(sourceChars: SourceChars)
   }
 
   def doRun(isDryRun: Boolean): Unit = {
-    Configuration.withSubstitution(new VariableSubstitution) { substitution =>
+    VariableSubstitution.withSubstitution { substitution =>
       // 这里需要注意参数的还原
       val sqlText = substitution.substitute(sql)
       logInfo(s"sql content:\n$sqlText")
@@ -49,7 +52,7 @@ object SqlCommand extends Logging {
 
   implicit lazy val sparkSession: SparkSession =
     SparkSqlRunner.sparkSession(
-      Some(Configuration.getOrElse(SystemVariables.JOB_NAME, "Unknown Job Name")))
+      Some(ConfigContainer.getOrElse(SystemVariables.JOB_NAME, "Unknown Job Name")))
 
   lazy val sparkSqlRunner = new SparkSqlRunner
 

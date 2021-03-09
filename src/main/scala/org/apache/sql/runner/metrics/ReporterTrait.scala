@@ -1,17 +1,19 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
 package org.apache.sql.runner.metrics
 
+import org.apache.sql.runner.container.ConfigContainer
+
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2020-02-26.
  */
-trait MetricsSystem {
+trait ReporterTrait {
 
   lazy val reporter: Option[GraphiteReporter] = {
-    val enableMetrics = Configuration.getOrElse("metrics.enable", "true").toBoolean
-    if (enableMetrics && Configuration.contains("graphite.host")) {
-      val graphiteHost = Configuration.get("graphite.host")
-      val graphitePort = Configuration.getOrElse("graphite.port", "2003").toInt
+    val enableMetrics = ConfigContainer.getOrElse("metrics.enable", "true").toBoolean
+    if (enableMetrics && ConfigContainer.contains("graphite.host")) {
+      val graphiteHost = ConfigContainer.get("graphite.host")
+      val graphitePort = ConfigContainer.getOrElse("graphite.port", "2003").toInt
       Some(GraphiteReporter(graphiteHost, graphitePort))
     } else {
       None

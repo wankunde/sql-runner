@@ -6,6 +6,8 @@ import java.time.LocalDateTime
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.util.SystemVariables
+import org.apache.sql.runner.command.{BaseCommand, BlockCommentCommand, CommandFactory}
+import org.apache.sql.runner.container.ConfigContainer
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -44,13 +46,13 @@ class ArgParser {
           argv = tail
         case "--config" :: value :: tail =>
           val tup = value.split("=")
-          Configuration :+ (tup(0), tup(1))
+          ConfigContainer :+ (tup(0), tup(1))
           argv = tail
         case "--profile" :: tail =>
-          Configuration :+ ("spark.profile", "true")
+          ConfigContainer :+ ("spark.profile", "true")
           argv = tail
         case "--dryrun" :: tail =>
-          Configuration :+ ("dryrun", "true")
+          ConfigContainer :+ ("dryrun", "true")
           argv = tail
         case "--dateRangeStep" :: dateRangeStepStr :: tail =>
           dateRangeStep = dateRangeStepStr.toInt
@@ -63,12 +65,12 @@ class ArgParser {
 
     jobFile = leftArgs(0)
 
-    Configuration :+ (SystemVariables.JOB_NAME, FilenameUtils.getBaseName(jobFile))
+    ConfigContainer :+ (SystemVariables.JOB_NAME, FilenameUtils.getBaseName(jobFile))
     if (StringUtils.isNotBlank(System.getenv(SystemVariables.ENV))) {
-      Configuration :+ (SystemVariables.ENV, System.getenv(SystemVariables.ENV))
+      ConfigContainer :+ (SystemVariables.ENV, System.getenv(SystemVariables.ENV))
     }
     if (StringUtils.isNotBlank(System.getenv(SystemVariables.APOLLO_META))) {
-      Configuration :+ (SystemVariables.APOLLO_META, System.getenv(SystemVariables.APOLLO_META))
+      ConfigContainer :+ (SystemVariables.APOLLO_META, System.getenv(SystemVariables.APOLLO_META))
     }
 
     commands = CommandFactory.parseCommands(Source.fromFile(jobFile).mkString)
@@ -89,7 +91,7 @@ class ArgParser {
     val notExistsKeys = keys.filterNot(headerMap.contains(_))
     assert(notExistsKeys.isEmpty, s"Header 中缺少 ${notExistsKeys.mkString(", ")} 参数!")
     for ((key, value) <- headerMap) {
-      Configuration.:+(key, value)
+      ConfigContainer.:+(key, value)
     }
   }
 }
