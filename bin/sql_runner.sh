@@ -12,7 +12,7 @@ jobFile=$1
 if [ ! -f ${jobFile} ];then
   jobFile="${BASEDIR}/${jobFile}"
   if [ ! -f ${jobFile} ];then
-    echo "没有找到job文件: "$2
+    echo "没有找到job文件: "${jobFile}
     exit
   fi
 fi
