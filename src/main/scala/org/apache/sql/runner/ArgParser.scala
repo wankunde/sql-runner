@@ -26,8 +26,8 @@ class ArgParser {
   var commands: Array[BaseCommand] = _
 
   def parseArgument(args: Array[String]): Unit = {
-    if (args.length < 2) {
-      println("env and job configuration file must be found!")
+    if (args.length < 1) {
+      println("job configuration file must be found!")
       System.exit(-1)
     }
 
