@@ -10,5 +10,5 @@ import org.apache.sql.runner.container.ConfigContainer
 object DQUtil {
 
   val serverUrl = ConfigContainer.getOrElse("dataquality.alert", "")
-  val title = s"${ConfigContainer.getOrElse("env", "UNKNOWN")}数据质量检查告警"
+  val title = s"${ConfigContainer.getOrElse(SystemVariables.ENV, "UNKNOWN")}数据质量检查告警"
 }

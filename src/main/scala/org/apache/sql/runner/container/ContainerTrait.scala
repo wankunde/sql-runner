@@ -21,37 +21,16 @@ class ContainerTrait[A, B] {
    *
    * @param map
    */
-  def :++(map: Map[A, B]): Unit = {
+  def ++(map: Map[A, B]): Unit = {
     valueMap.set(valueMap.get() ++ map)
   }
 
   /**
-   * 原有map和新的map合并，如果key冲突，保留原有的map值
-   *
-   * @param map
-   */
-  def ++:(map: Map[A, B]): Unit = {
-    valueMap.set(map ++ valueMap.get())
-  }
-
-  /**
    * 向map中加入新值，如果key已经存在，使用新值覆盖
-   * @param key
-   * @param value
+   * @param kv
    */
-  def :+(key: A, value: B): Unit = {
-    valueMap.set(valueMap.get() + (key -> value))
-  }
-
-  /**
-   * 向map中加入新值，如果key已经存在，放弃该值
-   * @param key
-   * @param value
-   */
-  def +:(key: A, value: B): Unit = {
-    if (!valueMap.get().contains(key)) {
-      valueMap.set(valueMap.get() + (key -> value))
-    }
+  def +(kv: (A, B)): Unit = {
+    valueMap.set(valueMap.get() + kv)
   }
 
   def getOrElse(key: A, default: => B): B = valueMap.get().getOrElse(key, default)

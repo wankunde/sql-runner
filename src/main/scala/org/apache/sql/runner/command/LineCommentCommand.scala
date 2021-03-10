@@ -17,7 +17,7 @@ case class LineCommentCommand(sourceChars: SourceChars)
   val (comment, _, nextStart) = readTo('\n')
   sourceChars.start = nextStart
 
-  override def toString: String = s"--${comment}"
+  override def toString: String = s"${CommandFactory.lineCommentPrefix} ${comment}"
 
   override def run(): Unit = {
     logInfo(s"\n${this.toString}")

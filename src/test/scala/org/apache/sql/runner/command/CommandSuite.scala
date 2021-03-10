@@ -47,7 +47,7 @@ class CommandSuite extends FunSuite with Matchers {
   }
 
   test("test parse if command") {
-    Seq("kun.wan", "King").map { username =>
+    /*Seq("kun.wan", "King").map { username =>
       val text =
         s"""$textHeader
            |!set user = $username;
@@ -63,7 +63,26 @@ class CommandSuite extends FunSuite with Matchers {
       commands.length should be(3)
 
       commands.foreach(_.run())
-    }
+    }*/
+
+    val text =
+      s"""$textHeader
+         |
+         |SELECT /*+ COLLECT_VALUE('row_count', 'c') */ count(1) as c;
+         |SELECT /*+ COLLECT_VALUE('row_count2', 'd') */ count(1) as d;
+         |
+         |!if (row_count = row_count2 and row_count = 1)
+         |  select 'row count is 1';
+         |!else
+         |  select 'row count is not 1';
+         |!fi
+         |""".stripMargin
+
+    val commands = CommandFactory.parseCommands(text)
+
+    commands.length should be(4)
+
+    commands.foreach(_.run())
   }
 
 }

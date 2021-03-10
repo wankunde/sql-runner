@@ -2,11 +2,13 @@
 package org.apache.sql.runner.command
 
 import org.apache.spark.sql.catalyst.analysis.UnresolvedAttribute
-import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.expressions.{BinaryExpression, Cast, Literal}
 import org.apache.spark.sql.catalyst.parser.CatalystSqlParser
+import org.apache.spark.sql.types.DataType
 import org.apache.sql.runner.config.VariableSubstitution
 import org.apache.sql.runner.container.{CollectorContainer, ConfigContainer}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -77,12 +79,48 @@ case class IfCommand(sourceChars: SourceChars)
 
   def doRun(isDryRun: Boolean): Unit = {
     VariableSubstitution.withSubstitution { substitution =>
+      val dataTypeMap = mutable.Map[String, DataType]()
+
+      val originExpr = CatalystSqlParser.parseExpression(substitution.substitute(ifConditionString))
+
+      var lastMapSize = -1
+      while (lastMapSize != dataTypeMap.size) {
+        lastMapSize = dataTypeMap.size
+        originExpr transform {
+          case expr: BinaryExpression =>
+            (expr.left, expr.right) match {
+              case (attr: UnresolvedAttribute, literal: Literal) =>
+                dataTypeMap += (attr.name -> literal.dataType)
+
+              case (literal: Literal, attr: UnresolvedAttribute) =>
+                dataTypeMap += (attr.name -> literal.dataType)
+
+              case (attr1: UnresolvedAttribute, attr2: UnresolvedAttribute) =>
+                if (dataTypeMap.contains(attr1.name)) {
+                  dataTypeMap += (attr2.name -> dataTypeMap(attr1.name))
+                }
+                if (dataTypeMap.contains(attr2.name)) {
+                  dataTypeMap += (attr1.name -> dataTypeMap(attr2.name))
+                }
+
+              case (_, _) =>
+            }
+            expr
+
+          case e => e
+        }
+      }
+
       val ifCondition =
-        CatalystSqlParser.parseExpression(substitution.substitute(ifConditionString)) transform {
+        originExpr transform {
           case e: UnresolvedAttribute =>
-            Literal(
-              CollectorContainer.getOrElse(e.name, ConfigContainer.get(e.name))
-            )
+            val dataType = dataTypeMap(e.name)
+            val literal = Literal(CollectorContainer.getOrElse(e.name, ConfigContainer.get(e.name)))
+            if (dataType == literal.dataType) {
+              literal
+            } else {
+              Cast(literal, dataType)
+            }
 
           case e => e
         }

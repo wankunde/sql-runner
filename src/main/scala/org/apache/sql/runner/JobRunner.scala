@@ -7,7 +7,6 @@ import java.time.temporal.ChronoUnit
 import org.apache.spark.sql.plugin.{AsyncProfilePlugin, YourkitPlugin}
 import org.apache.spark.sql.util.{Logging, SystemVariables}
 import org.apache.sql.runner.command.SqlCommand
-import org.apache.sql.runner.config.ApolloClient
 import org.apache.sql.runner.container.{CollectorContainer, ConfigContainer}
 
 import scala.reflect.io.File
@@ -21,11 +20,26 @@ object JobRunner extends ArgParser with Logging {
     parseArgument(args)
     logInfo(s"submit job for ${jobFile}")
 
+    // real job
+    batchTimesOpt.getOrElse(Seq[LocalDateTime]()).map { batchTime =>
+      CollectorContainer + (SystemVariables.BATCH_TIME -> batchTime)
+      logInfo(s"submitting job(batchTime = $batchTime)")
+      if (ConfigContainer.contains("dryrun")) {
+        commands.foreach(_.dryrun())
+      } else {
+        commands.foreach(_.run())
+      }
+      SqlCommand.stop()
+    }
+    logInfo(s"end job")
+  }
+
+  def prepareRuntimeParameter(): Unit = {
     // prepare for spark mode
     val distJars = Seq("sql-runner-2.0.jar").map(jar => s"lib/${jar}").mkString(",")
-    ConfigContainer :+ ("spark.yarn.dist.jars", distJars)
+    ConfigContainer + ("spark.yarn.dist.jars" -> distJars)
     if (!ConfigContainer.contains("spark.yarn.queue")) {
-      ConfigContainer :+ ("spark.yarn.queue", s"root.${File(jobFile).parent.name}")
+      ConfigContainer + ("spark.yarn.queue" -> s"root.${File(jobFile).parent.name}")
     }
 
     if (ConfigContainer.getOrElse("spark.profile", "false").toBoolean) {
@@ -34,18 +48,18 @@ object JobRunner extends ArgParser with Logging {
 
       ConfigContainer.getOrElse("spark.profile.type", "jfr") match {
         case "yourkit" =>
-          ConfigContainer :+ ("spark.profile.type", "snapshot")
-          ConfigContainer :+ ("spark.yarn.dist.files", s"${profileShell},${yourkitAgent}")
-          ConfigContainer :+ ("spark.yarn.dist.jars", s"${distJars},hdfs:///deploy/config/yjp-controller-api-redist.jar")
-          ConfigContainer :+ ("spark.executor.extraJavaOptions", "-agentpath:libyjpagent.so=logdir=<LOG_DIR>,async_sampling_cpu")
-          ConfigContainer :+ ("spark.executor.plugins", classOf[YourkitPlugin].getName)
+          ConfigContainer + ("spark.profile.type" -> "snapshot")
+          ConfigContainer + ("spark.yarn.dist.files" -> s"${profileShell},${yourkitAgent}")
+          ConfigContainer + ("spark.yarn.dist.jars" -> s"${distJars},hdfs:///deploy/config/yjp-controller-api-redist.jar")
+          ConfigContainer + ("spark.executor.extraJavaOptions" -> "-agentpath:libyjpagent.so=logdir=<LOG_DIR>,async_sampling_cpu")
+          ConfigContainer + ("spark.executor.plugins" -> classOf[YourkitPlugin].getName)
 
         case _ =>
-          ConfigContainer :+ ("spark.yarn.dist.archives",
+          ConfigContainer + ("spark.yarn.dist.archives" ->
             "hdfs:///deploy/config/async-profiler/async-profiler.zip#async-profiler")
-          ConfigContainer :+ ("spark.yarn.dist.files", profileShell)
-          ConfigContainer :+ ("spark.executor.extraLibraryPath", "./async-profiler/build/")
-          ConfigContainer :+ ("spark.executor.plugins", classOf[AsyncProfilePlugin].getName)
+          ConfigContainer + ("spark.yarn.dist.files" -> profileShell)
+          ConfigContainer + ("spark.executor.extraLibraryPath" -> "./async-profiler/build/")
+          ConfigContainer + ("spark.executor.plugins" -> classOf[AsyncProfilePlugin].getName)
       }
     }
 
@@ -86,21 +100,5 @@ object JobRunner extends ArgParser with Logging {
       }
       batchTimesOpt = Some(Seq(defaultBatchTime))
     }
-
-    // pull variables from apollo
-    ApolloClient.pollVariablesFromApollo()
-
-    // real job
-    batchTimesOpt.getOrElse(Seq[LocalDateTime]()).map { batchTime =>
-      CollectorContainer :+ (SystemVariables.BATCH_TIME, batchTime)
-      logInfo(s"submitting job(batchTime = $batchTime)")
-      if (ConfigContainer.contains("dryrun")) {
-        commands.foreach(_.dryrun())
-      } else {
-        commands.foreach(_.run())
-      }
-      SqlCommand.stop()
-    }
-    logInfo(s"end job")
   }
 }

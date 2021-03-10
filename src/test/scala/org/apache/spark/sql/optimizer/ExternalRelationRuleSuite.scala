@@ -29,7 +29,7 @@ class ExternalRelationRuleSuite extends QueryTest with SQLTestUtils with Matcher
   override def beforeAll(): Unit = {
     cleanTestHiveData()
 
-    ConfigContainer :++ Map(
+    ConfigContainer ++ Map(
       // for SqlCommand Spark Session Name
       SystemVariables.JOB_NAME -> "ExternalRelationRuleSuite",
 
@@ -215,7 +215,7 @@ class ExternalRelationRuleSuite extends QueryTest with SQLTestUtils with Matcher
            |""".stripMargin).run()
 
       // 当avro Schema已经存在的时候，需要主动从avro Schema Registry上获取Schema
-      ConfigContainer :+ ("kafka.stu.avro.forceCreate", "false")
+      ConfigContainer + ("kafka.stu.avro.forceCreate" -> "false")
 
       new SqlCommand(
         s"""INSERT INTO stu

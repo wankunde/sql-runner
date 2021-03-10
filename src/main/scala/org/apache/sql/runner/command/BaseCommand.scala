@@ -43,7 +43,6 @@ abstract class BaseCommand(sourceChars: SourceChars) extends Logging {
         }
       }
 
-//      println(i + " : " + new String(chars.slice(i - len + 1, i + 1)))
       if (chars.slice(i - len + 1, i + 1) sameElements target) {
         index = i + 1 - len
       } else {

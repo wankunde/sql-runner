@@ -21,6 +21,6 @@ case class ArrayValueCollector(name: String, columnName: String)
   }
 
   override def close(): Unit = {
-    CollectorContainer :+ (name, array.toArray)
+    CollectorContainer + (name -> array.toArray)
   }
 }

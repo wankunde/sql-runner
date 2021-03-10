@@ -15,7 +15,7 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
 
   test("test time variable") {
 
-    CollectorContainer :+ (SystemVariables.BATCH_TIME, LocalDateTime.parse("2019-08-07T13:25:41"))
+    CollectorContainer + (SystemVariables.BATCH_TIME -> LocalDateTime.parse("2019-08-07T13:25:41"))
     val substitution = new VariableSubstitution()
 
     substitution.dateParameter("${date}") should be("20190807")
@@ -48,8 +48,8 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
   }
 
   test("test variable substitution in sql") {
-    ConfigContainer :+ ("ab_target", "after_trade")
-    CollectorContainer :+ (SystemVariables.BATCH_TIME, LocalDateTime.parse("2019-08-07T13:25:41"))
+    ConfigContainer + ("ab_target" -> "after_trade")
+    CollectorContainer + (SystemVariables.BATCH_TIME -> LocalDateTime.parse("2019-08-07T13:25:41"))
     val variableSubstitution = new VariableSubstitution()
     val sqlText =
       """
@@ -78,8 +78,8 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
   }
 
   test("test nested variable substitution in sql") {
-    ConfigContainer :+ ("report_days", "3")
-    CollectorContainer :+ (SystemVariables.BATCH_TIME, LocalDateTime.parse("2019-08-07T13:25:41"))
+    ConfigContainer + ("report_days" -> "3")
+    CollectorContainer + (SystemVariables.BATCH_TIME -> LocalDateTime.parse("2019-08-07T13:25:41"))
     val variableSubstitution = new VariableSubstitution()
     val sqlText = "SELECT * FROM tab WHERE dt = ${date-${report_days}d|yyyyMMdd}"
     val newSqlText = variableSubstitution.substitute(sqlText)

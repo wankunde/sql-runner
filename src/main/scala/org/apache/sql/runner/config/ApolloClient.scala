@@ -42,7 +42,7 @@ object ApolloClient extends Logging {
         val value = systemClient.getProperty(key, "")
         val encryptedValue = if (key.toLowerCase.contains("password")) "******" else value
         logInfo(s"pull variable from apollo, $key = $encryptedValue)")
-        ConfigContainer :+ (key, value)
+        ConfigContainer + (key -> value)
         value
       }).toMap
 
@@ -52,7 +52,7 @@ object ApolloClient extends Logging {
           val value = appClient.getProperty(key, "")
           val encryptedValue = if (key.toLowerCase.contains("password")) "******" else value
           logInfo(s"pull variable from apollo, $key = $encryptedValue")
-          ConfigContainer :+ (key, value)
+          ConfigContainer + (key -> value)
           key -> value
         }.toMap
       } else {
