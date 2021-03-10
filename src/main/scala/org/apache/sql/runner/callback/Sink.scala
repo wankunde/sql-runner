@@ -2,8 +2,7 @@
 package org.apache.sql.runner.callback
 
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.util.Logging
+import org.apache.spark.sql.util.{Logging, SystemVariables}
 import org.apache.sql.runner.metrics.ReporterTrait
 
 /**
@@ -14,7 +13,7 @@ trait Sink extends DataCallBack with ReporterTrait with Logging {
 
   val config: Map[String, String]
 
-  val envName = config.getOrElse("env", "UNKNOWN")
+  val envName = config.getOrElse(SystemVariables.ENV, "UNKNOWN")
 
   var resultRows: Long = 0
 
