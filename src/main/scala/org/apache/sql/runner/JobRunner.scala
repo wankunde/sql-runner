@@ -30,8 +30,8 @@ object JobRunner extends ArgParser with Logging {
       } else {
         commands.foreach(_.run())
       }
-      SqlCommand.stop()
     }
+    SqlCommand.stop()
 
     logInfo(s"end job")
   }
