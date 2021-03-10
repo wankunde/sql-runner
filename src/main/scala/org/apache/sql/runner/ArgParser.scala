@@ -95,7 +95,7 @@ class ArgParser {
     val notExistsKeys = keys.filterNot(headerMap.contains(_))
     assert(notExistsKeys.isEmpty, s"Header 中缺少 ${notExistsKeys.mkString(", ")} 参数!")
     for ((key, value) <- headerMap) {
-      ConfigContainer.:+(key, value)
+      ConfigContainer :+ (key -> value)
     }
   }
 }

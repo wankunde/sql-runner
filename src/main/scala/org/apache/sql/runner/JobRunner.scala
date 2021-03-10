@@ -71,10 +71,10 @@ object JobRunner extends ArgParser with Logging {
         case "minute" =>
           val rangeSize = ChronoUnit.MINUTES.between(startDate.get, endDate.get)
           Some(Range.inclusive(0, rangeSize.toInt, dateRangeStep).map(i => startDate.get.plusMinutes(i)))
-        case "hour" =>
+        case "hour" | "hourly" =>
           val rangeSize = ChronoUnit.HOURS.between(startDate.get, endDate.get)
           Some(Range.inclusive(0, rangeSize.toInt, dateRangeStep).map(i => startDate.get.plusHours(i)))
-        case "day" =>
+        case "day" | "daily" =>
           val rangeSize = ChronoUnit.DAYS.between(startDate.get, endDate.get)
           Some(Range.inclusive(0, rangeSize.toInt, dateRangeStep).map(i => startDate.get.plusDays(i)))
         case "month" =>
