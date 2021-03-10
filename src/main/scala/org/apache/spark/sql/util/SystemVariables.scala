@@ -9,6 +9,7 @@ object SystemVariables {
 
   val BATCH_TIME = "batch_time"
   val ENV = "env"
+  val DEFAULT_ENV = System.getenv(SystemVariables.ENV.toUpperCase)
   val APOLLO_META = "APOLLO_META"
   val JOB_NAME = "job_name"
 

@@ -23,7 +23,7 @@ case class SetCommand(sourceChars: SourceChars) extends BaseCommand(sourceChars)
   override def toString: String = s"${CommandFactory.setPrefix} $key = $value;"
 
   override def run(): Unit = {
-    ConfigContainer + (key -> value)
+    ConfigContainer :+ (key -> value)
     logInfo(s"\n${this.toString}")
   }
 }

@@ -24,7 +24,7 @@ object ConfigUtil {
 
   def withConfigs[T](configs: (String, String)*)(func: => T): T = {
     try {
-      configs.foreach(config => ConfigContainer + (config._1 -> config._2))
+      configs.foreach(config => ConfigContainer :+ (config._1 -> config._2))
       func
     } finally {
       configs.foreach(config => ConfigContainer - config._1)

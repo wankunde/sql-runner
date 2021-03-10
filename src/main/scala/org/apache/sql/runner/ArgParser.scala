@@ -47,13 +47,13 @@ class ArgParser {
           argv = tail
         case "--config" :: value :: tail =>
           val tup = value.split("=")
-          ConfigContainer + (tup(0) -> tup(1))
+          ConfigContainer :+ (tup(0) -> tup(1))
           argv = tail
         case "--profile" :: tail =>
-          ConfigContainer + ("spark.profile" -> "true")
+          ConfigContainer :+ ("spark.profile" -> "true")
           argv = tail
         case "--dryrun" :: tail =>
-          ConfigContainer + ("dryrun" -> "true")
+          ConfigContainer :+ ("dryrun" -> "true")
           argv = tail
         case "--dateRangeStep" :: dateRangeStepStr :: tail =>
           dateRangeStep = dateRangeStepStr.toInt
@@ -66,12 +66,12 @@ class ArgParser {
 
     jobFile = leftArgs(0)
 
-    ConfigContainer + (SystemVariables.JOB_NAME -> FilenameUtils.getBaseName(jobFile))
-    if (StringUtils.isNotBlank(System.getenv(SystemVariables.ENV))) {
-      ConfigContainer + (SystemVariables.ENV -> System.getenv(SystemVariables.ENV))
+    ConfigContainer :+ (SystemVariables.JOB_NAME -> FilenameUtils.getBaseName(jobFile))
+    if (StringUtils.isNotBlank(SystemVariables.DEFAULT_ENV)) {
+      ConfigContainer :+ (SystemVariables.ENV -> SystemVariables.DEFAULT_ENV)
     }
     if (StringUtils.isNotBlank(System.getenv(SystemVariables.APOLLO_META))) {
-      ConfigContainer + (SystemVariables.APOLLO_META -> System.getenv(SystemVariables.APOLLO_META))
+      ConfigContainer :+ (SystemVariables.APOLLO_META -> System.getenv(SystemVariables.APOLLO_META))
     }
 
     commands = CommandFactory.parseCommands(Source.fromFile(jobFile).mkString)
@@ -95,7 +95,7 @@ class ArgParser {
     val notExistsKeys = keys.filterNot(headerMap.contains(_))
     assert(notExistsKeys.isEmpty, s"Header 中缺少 ${notExistsKeys.mkString(", ")} 参数!")
     for ((key, value) <- headerMap) {
-      ConfigContainer.+(key, value)
+      ConfigContainer.:+(key, value)
     }
   }
 }

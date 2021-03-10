@@ -37,14 +37,14 @@ object ApolloClient extends Logging {
       System.setProperty("app.id", appId)
 
       val systemClient = ApolloClient("1.above-board")
+
       systemClient.config.getPropertyNames
-        .toArray.map(key => key -> {
+        .toArray.map { case key: String =>
         val value = systemClient.getProperty(key, "")
         val encryptedValue = if (key.toLowerCase.contains("password")) "******" else value
         logInfo(s"pull variable from apollo, $key = $encryptedValue)")
-        ConfigContainer + (key -> value)
-        value
-      }).toMap
+        ConfigContainer :+ (key -> value)
+      }
 
       if (ConfigContainer.contains("apollo.namespace")) {
         val appClient = ApolloClient(ConfigContainer.get("apollo.namespace"))
@@ -52,11 +52,8 @@ object ApolloClient extends Logging {
           val value = appClient.getProperty(key, "")
           val encryptedValue = if (key.toLowerCase.contains("password")) "******" else value
           logInfo(s"pull variable from apollo, $key = $encryptedValue")
-          ConfigContainer + (key -> value)
-          key -> value
-        }.toMap
-      } else {
-        Map()
+          ConfigContainer :+ (key -> value)
+        }
       }
     }
   }

@@ -29,7 +29,7 @@ class ContainerTrait[A, B] {
    * 向map中加入新值，如果key已经存在，使用新值覆盖
    * @param kv
    */
-  def +(kv: (A, B)): Unit = {
+  def :+(kv: (A, B)): Unit = {
     valueMap.set(valueMap.get() + kv)
   }
 

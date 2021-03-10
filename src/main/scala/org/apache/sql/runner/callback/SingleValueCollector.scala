@@ -19,6 +19,6 @@ case class SingleValueCollector(name: String, columnName: String)
   }
 
   override def close(): Unit = {
-    CollectorContainer + (name -> value)
+    CollectorContainer :+ (name -> value)
   }
 }
