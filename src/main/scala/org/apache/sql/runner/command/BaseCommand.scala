@@ -13,7 +13,6 @@ abstract class BaseCommand(sourceChars: SourceChars) extends Logging {
   val escapeMapping: Map[Array[Char], Array[Char]] = Map(
     Array('\"') -> Array('\"'),
     Array(''') -> Array('''),
-    Array(''', ''', ''') -> Array(''', ''', '''),
     Array('(') -> Array(')'),
   )
 

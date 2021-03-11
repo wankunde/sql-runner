@@ -27,11 +27,11 @@ class CommandSuite extends FunSuite with Matchers {
          |-- 测试一下单行注释
          |
          |!set mykey=myvalue;
-         |!set longKey = \"\"\"(
+         |!set longKey = \"(
          |select *
          |from tab
          |WHERE dates = '{date | yyyy - MM - dd}'
-         |) as q\"\"\";
+         |) as q\";
          |
          |SELECT id, name
          |FROM test_db.test_name
@@ -47,7 +47,7 @@ class CommandSuite extends FunSuite with Matchers {
   }
 
   test("test parse if command") {
-    /*Seq("kun.wan", "King").map { username =>
+    Seq("kun.wan", "King").map { username =>
       val text =
         s"""$textHeader
            |!set user = $username;
@@ -63,7 +63,7 @@ class CommandSuite extends FunSuite with Matchers {
       commands.length should be(3)
 
       commands.foreach(_.run())
-    }*/
+    }
 
     val text =
       s"""$textHeader
