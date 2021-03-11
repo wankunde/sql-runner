@@ -37,7 +37,8 @@ WHERE   t.dt = '${date|yyyyMMdd}';
 当前系统支持如下命令
 * 单行注释命令
 * 多行注释命令
-* Set参数命令
+* SET参数命令
+* IF命令
 * SQL命令
 
 ## 单行注释命令
@@ -48,9 +49,48 @@ WHERE   t.dt = '${date|yyyyMMdd}';
 
 以`/**` 作为多行注释开始，以 `*/`作为多行注释结束，系统执行的时候会忽略多行注释
 
-## Set参数命令
+## SET参数命令
 
-以`!set` 作为Set参数命令开始，以`;` 作为命令结束符, 命令格式: `!set [key]=[value];`, 系统执行的时候解析该参数为系统参数
+以`!set` 作为SET命令开始，以`;` 作为命令结束符, 命令格式: `!set [key]=[value];`, 系统执行的时候解析该参数为系统参数
+
+## IF命令
+
+以`!if` 作为IF命令开始，以`!fi`作为命令结束符，命令支持`!else`语句分支，命令格式:
+```
+!if ([条件判断语句])
+  [命令1]
+  [命令2]
+  [命令3]
+!else
+  [命令4]
+  [命令5]
+!fi
+```
+命令正在执行的时候会对上述条件判断语句进行判断，如果条件为真，执行IF下面的命令，如果条件为假，执行ELSE下面的命令。
+
+使用示例1: 对运行环境参数进行判断，来选择IF分支命令的选择执行
+
+```sql
+!set user = "kun.wan";
+!if (user = 'kun.wan')
+  select 'if command';
+!else
+  select 'else command';
+!fi
+```
+
+使用示例2: 根据之前的SQL执行结果进行判断，来选择IF分支命令的选择执行
+
+```sql
+SELECT /*+ COLLECT_VALUE('row_count', 'c') */ count(1) as c;
+SELECT /*+ COLLECT_VALUE('row_count2', 'd') */ count(1) as d;
+
+!if (row_count = row_count2 and row_count = 1)
+  select 'row count is 1';
+!else
+  select 'row count is not 1';
+!fi
+```
 
 ## SQL命令
 
