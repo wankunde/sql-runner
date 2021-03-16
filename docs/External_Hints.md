@@ -2,22 +2,27 @@
 
 系统通过扩展支持Hint，实现了外部数据源的读和写，下面对主要的扩展Hint做说明
 
-## JDBC_VIEW([TAG], [RELATION_NAME])
+## JDBC_VIEW([DB_TAG], [RELATION_NAME])
 
 功能说明:
 通过JDBC连接一个外部数据表，或者一个JDBC查询作为一个Spark中的视图。
 
-参数说明:
+Hint参数说明:
 
-* TAG: JDBC连接Tag
-* RELATION_NAME: 如果已经配置`TAG.RELATION_NAME.query` 参数，则会根据这个DB查询的Query作为一个Spark中的视图。如果没有配置，则把`TAG`数据中的`RELATION_NAME`表作为一个Spark中的视图。
+* DB_TAG: JDBC连接Tag
+* RELATION_NAME: 如果已经配置`DB_TAG.RELATION_NAME.query` 参数，则会根据这个DB查询的Query作为一个Spark中的视图。如果没有配置，则把`DB_TAG`数据中的`RELATION_NAME`表作为一个Spark中的视图。
+
+辅助参数说明:
+* [DB_TAG].[RELATION_NAME].numPartitions : 控制数据库查询的并行度
+* [DB_TAG].[RELATION_NAME].partitionColumn : 可选参数, 如果使用多线程进行数据查询，每个分区会根据查询该列数值的hash值取模算法，进行散列查询。
+
 
 使用示例:
 
-以下SQL会连接和读取mysql库中的`bi.stores`表数据再进行ETL处理。
+以下SQL会连接和读取`bi`数据库中的`stores`表数据作为Spark的计算数据源进行数据处理。
 
 ```sql
-// query 为可选参数
+// query 为可选参数, DB_TAG = bi, RELATION_NAME = stores
 !set bi.stores.query = """(select * from stu where id<3) as subq"""; 
 !set bi.stores.partitionColumn = id;
 !set bi.stores.numPartitions = 2;
@@ -32,30 +37,28 @@ WHERE   id < 50;
 
 * Spark连接JDBC_VIEW默认为单线程，在访问数据量较大的表时，容易造成访问超时。此时，可以通过设置`partitionColumn`参数和`numPartitions`参数来支持Spark并发访问数据库; 数据分区算法使用除余算法，而不是spark内置算法，所以不需要指定 `lowerBound`和`upperBound`参数。
 
-## JDBC_SINK([TAG], [TABLE_NAME], [RELATION_NAME])
+## JDBC_SINK([DB_TAG], [TABLE_NAME], [RELATION_NAME])
 
 功能说明:
 通过JDBC连接一个外部数据表，实现将SQL的程序结果以upsert方式插入到一个外部表中。
 程序会根据目标的schema 和计算结果的数据schema动态生成 upsert语句。
 
-参数说明:
+Hint参数说明:
 
-* TAG: JDBC连接Tag
-* TABLE_NAME 和 RELATION_NAME: 如果没有配置`RELATION_NAME`，`RELATION_NAME`=`TABLE_NAME`，把`TAG`数据库中的`TABLE_NAME`表创建为一个名为`RELATION_NAME` 的Spark视图。
+* DB_TAG: JDBC数据库的连接标识
+* TABLE_NAME: 如果没有配置`RELATION_NAME`，`RELATION_NAME`=`TABLE_NAME`，把`TAG`数据库中的`TABLE_NAME`表创建为一个名为`RELATION_NAME` 的Spark视图。
+* RELATION_NAME: JDBC表别名，即允许对JDBC输出表取别名。非必须参数，不填写时，和 TABLE_NAME 参数保持一致。
 
 辅助参数说明:
-* tag : 结果存储的mysql数据库标识，是在项目Apollo中配置的数据库标识
-* tableName : 需要操作的表名
-* tableAlias : JDBC表别名，即允许对JDBC输出表取别名。非必须参数，不填写时，和tableName参数保持一致。
-* unique.keys : 必填参数，数据插入和更新的表的主键字段。有多个字段时，使用逗号分隔。
-* parallel : 是否开启并发数据库更新，默认为false
-* numPartitions : 控制数据库更新操作的并行度
+* [DB_TAG].[RELATION_NAME].unique.keys : 必填参数，数据插入和更新的表的主键字段。有多个字段时，使用逗号分隔。
+* [DB_TAG].[RELATION_NAME].numPartitions : 控制数据库更新操作的并行度
 
 使用示例:
 
-在`mysql`库中存在`stu` 数据表，现在需要把计算结果插入到stu表有以下两种方式:
+把Spark计算结果插入到 `mysql`库中存在`stu` 数据表 中
 
 ```sql
+-- 假设 DB_TAG = mysql, RELATION_NAME = stu
 !set mysql.stu.unique.keys = id;
 
 WITH t as (
@@ -85,24 +88,25 @@ FROM t;
 
 功能说明:
 将SQL的程序结果插入到Kafka中。目前支持将结果自动转换为 avro 和 json 两种数据格式。
+目前支持的kafka 全局配置参数有 `kafka.bootstrap.servers`, `kafka.schema.registry.url`。
 
-参数说明:
+Hint参数说明:
 
 * RELATION_NAME: Spark中用于数据插入的视图名。
 
 辅助参数说明:
-* tag : kafka 全部配置参数的前缀. 目前支持的kafka 全局配置参数有 `${tag}.bootstrap.servers`, `${tag}.schema.registry.url`。
-* recordType : 发送到kafka中的数据格式，支持 `json` 和 `avro` 两种格式。
-* kafkaTopic : kafka 的topic 名称。
-* avro.name : 如果数据为avro格式，可以指定avro 的名字。
-* avro.namespace : 如果数据为avro格式，可以指定avro 的namespace。
-* avro.forceCreate : 默认为false， 如果为true，会强制使用计算结果dataframe schema作为kafka avro schema，如果schema registry上已经存在schema则会报错。如果为false，会先从Schema Registry上获取topic的Schema（此时其他avro参数无需配置），如果获取失败，再使用计算结果dataframe schema作为kafka avro schema。
-* maxRatePerPartition : 每个spark executor写入kafka的每秒消息数。数据结果数据集比较大，一定要加上速度限制，否则会把kafka写爆掉。
+* kafka.recordType : 发送到kafka中的数据格式，支持 `json` 和 `avro` 两种格式。
+* kafka.[RELATION_NAME].kafkaTopic : kafka 的topic 名称。
+* kafka.[RELATION_NAME].avro.name : 如果数据为avro格式，可以指定avro 的名字。
+* kafka.[RELATION_NAME].avro.namespace : 如果数据为avro格式，可以指定avro 的namespace。
+* kafka.[RELATION_NAME].avro.forceCreate : 默认为false， 如果为true，会强制使用计算结果dataframe schema作为kafka avro schema，如果schema registry上已经存在schema则会报错。如果为false，会先从Schema Registry上获取topic的Schema（此时其他avro参数无需配置），如果获取失败，再使用计算结果dataframe schema作为kafka avro schema。
+* kafka.[RELATION_NAME].maxRatePerPartition : 每个spark executor写入kafka的每秒消息数。数据结果数据集比较大，一定要加上速度限制，否则会把kafka写爆掉。
+
 
 使用示例:
 
 ```sql
-!set tag = kafka;
+-- 假设 RELATION_NAME = stu
 !set kafka.recordType = json;
 !set kafka.stu.kafkaTopic = test_wankun;
 
