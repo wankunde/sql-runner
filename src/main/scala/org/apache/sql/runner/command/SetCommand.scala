@@ -31,6 +31,6 @@ case class SetCommand(sourceChars: SourceChars) extends BaseCommand(sourceChars)
       }
 
     ConfigContainer :+ (key -> substitutionValue)
-    logInfo(s"\n${this.toString}")
+    logInfo(s"\n${CommandFactory.setPrefix} $key = $substitutionValue;")
   }
 }
