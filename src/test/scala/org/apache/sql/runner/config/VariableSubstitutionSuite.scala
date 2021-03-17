@@ -14,7 +14,6 @@ import org.scalatest.{FunSuite, Matchers}
 class VariableSubstitutionSuite extends FunSuite with Matchers {
 
   test("test time variable") {
-
     CollectorContainer :+ (SystemVariables.BATCH_TIME -> LocalDateTime.parse("2019-08-07T13:25:41"))
     val substitution = new VariableSubstitution()
 
@@ -50,8 +49,9 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
   test("test variable substitution in sql") {
     ConfigContainer :+ ("ab_target" -> "after_trade")
     CollectorContainer :+ (SystemVariables.BATCH_TIME -> LocalDateTime.parse("2019-08-07T13:25:41"))
-    val variableSubstitution = new VariableSubstitution()
-    val sqlText =
+    val substitution = new VariableSubstitution()
+
+    substitution.substitute(
       """
         |SELECT  count(1)
         |FROM    tab
@@ -61,9 +61,7 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
         |AND     end_hour = '${date - 24h|hh}'
         |AND     month = '${date - 24h|MM}'
         |AND     ab_target = '${ab_target}'
-        |""".stripMargin
-    val newSqlText = variableSubstitution.substitute(sqlText)
-    val expectSqlText =
+        |""".stripMargin) should equal(
       s"""
          |SELECT  count(1)
          |FROM    tab
@@ -73,17 +71,23 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
          |AND     end_hour = '01'
          |AND     month = '08'
          |AND     ab_target = 'after_trade'
-         |""".stripMargin
-    newSqlText should equal(expectSqlText)
+         |""".stripMargin)
   }
 
   test("test nested variable substitution in sql") {
     ConfigContainer :+ ("report_days" -> "3")
     CollectorContainer :+ (SystemVariables.BATCH_TIME -> LocalDateTime.parse("2019-08-07T13:25:41"))
-    val variableSubstitution = new VariableSubstitution()
-    val sqlText = "SELECT * FROM tab WHERE dt = ${date-${report_days}d|yyyyMMdd}"
-    val newSqlText = variableSubstitution.substitute(sqlText)
-    val expectSqlText = "SELECT * FROM tab WHERE dt = 20190804"
-    newSqlText should equal(expectSqlText)
+    val substitution = new VariableSubstitution()
+    substitution.substitute("SELECT * FROM tab WHERE dt = ${date-${report_days}d|yyyyMMdd}") should
+      equal("SELECT * FROM tab WHERE dt = 20190804")
+  }
+
+  test("test parameters with default value") {
+    val substitution = new VariableSubstitution()
+    substitution.substitute("!set key1 = ${key1, 'DEFAULT_VALUE1'};") should
+      equal("!set key1 = DEFAULT_VALUE1;")
+
+    substitution.substitute("!set key1 = ${key1, \"DEFAULT_VALUE1\"};") should
+      equal("!set key1 = DEFAULT_VALUE1;")
   }
 }

@@ -99,7 +99,9 @@ SELECT /*+ COLLECT_VALUE('row_count2', 'd') */ count(1) as d;
 
 # 参数管理
 
-系统执行过程中会有很多运行以来参数，包括时间参数， 系统参数和Set命令参数
+系统执行过程中会有很多运行以来参数，包括时间参数， 系统参数和Set命令参数。
+系统通过set命令，apollo配置等方式进行参数定义，在程序中使用`${variable}`的格式引用参数。
+通过 `${variable, 'DEFAULT_VALUE'}`格式引用参数时，如果没有找到`variable`参数，则返回`DEFAULT_VALUE`
 
 ## 时间参数
 

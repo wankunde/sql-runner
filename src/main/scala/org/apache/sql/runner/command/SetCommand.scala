@@ -1,6 +1,7 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
 package org.apache.sql.runner.command
 
+import org.apache.sql.runner.config.VariableSubstitution
 import org.apache.sql.runner.container.ConfigContainer
 
 /**
@@ -17,7 +18,15 @@ case class SetCommand(sourceChars: SourceChars) extends BaseCommand(sourceChars)
 
   val (key, _, valueStart) = readTo('=')
   sourceChars.start = valueStart
-  val (value, _, nextStart) = readTo(';')
+  val (value, _, nextStart) =
+    readTo(';') match {
+      case (value, index, nextStart) =>
+        val substitutionValue =
+          VariableSubstitution.withSubstitution { substitution =>
+            substitution.substitute(value)
+          }
+        (substitutionValue, index, nextStart)
+    }
   sourceChars.start = nextStart
 
   override def toString: String = s"${CommandFactory.setPrefix} $key = $value;"

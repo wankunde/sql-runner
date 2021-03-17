@@ -1,6 +1,8 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
 package org.apache.spark.sql.optimizer
 
+import java.time.ZoneOffset
+
 import org.apache.spark.sql.InsightSuiteUtils.cleanTestHiveData
 import org.apache.spark.sql.QueryTest
 import org.apache.spark.sql.hive.SparkSqlRunner
@@ -59,6 +61,77 @@ class ExternalRelationRuleSuite extends QueryTest with SQLTestUtils with Matcher
     cleanTestHiveData()
     spark.stop()
     super.afterAll()
+  }
+
+  test("sdf") {
+    import spark.implicits._
+    import scala.util.Random
+    import scala.math.BigDecimal
+    import java.time.LocalDateTime
+    import java.time.format.DateTimeFormatter
+    import java.sql.Timestamp
+
+    spark.range(-1000, 1000).map { id =>
+      val dt = Timestamp.valueOf(LocalDateTime.now.plusDays(id))
+      val dt_str = LocalDateTime.now.plusDays(id).format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+      val dt_int = dt_str.toInt
+      (id.toInt, dt, dt_str, dt_int)
+    }.toDF("id", "dt", "dt_str", "dt_int")
+      .createOrReplaceTempView("tab")
+
+    spark.sql("SELECT * FROM (SELECT current_date(), id, row_number() OVER(PARTITION BY id %10 ORDER BY id ASC) rn from tab) t where rn < 5").show(false)
+    spark.sql("explain extended SELECT * FROM (SELECT current_date(), id, id % 10 rn from tab) t where rn < 5").show(false)
+
+    spark.sql(
+      s"""create table dim_date (
+         |    id int,
+         |    dt timestamp,
+         |    dt_str string,
+         |    dt_int int
+         |)
+         |stored as parquet;
+         |""".stripMargin)
+
+    spark.sql("insert overwrite table dim_date select * from tab")
+
+    spark.sql("select * from dim_date ").show(200, false)
+
+
+    spark.sql("select * from  where dt = 20201116 limit 10").show()
+    spark.sql(s"""select *
+                 |from tb_bot_recommend.dws_recommend_detail t1
+                 |join (
+                 |   select dt_str
+                 |   from dim_date
+                 |   where dt_int = 20201116
+                 |) t2
+                 |on t1.dt = t2.dt_str
+                 |limit 1000
+                 |""".stripMargin).show(10, false)
+
+
+    spark.range(1, 1000).map { id =>
+      val id2 = id + Random.nextInt(10) - 5
+      val id3 = BigDecimal((id * 100 + Random.nextInt(100)) / 100.0)
+      val name = s"wankun_$id"
+      val isMan = id % 2 == 0
+      val birthday = Timestamp.valueOf(LocalDateTime.now.plusDays(id))
+      (id.toInt, id2, id3, name, isMan, birthday)
+    }.toDF("id", "id2", "id3", "name", "isMan", "birthday")
+      .createOrReplaceTempView("tab2")
+    spark.sql(
+      s"""create table tab (
+         |    id1 int,
+         |    id2 bigint,
+         |    id3 decimal,
+         |    name string,
+         |    isMan boolean,
+         |    birthday timestamp
+         |)
+         |stored as parquet;
+         |""".stripMargin)
+    spark.sql("insert overwrite table tab select * from tab2")
+    spark.sql("select * from tab where id1 =4 limit 10").show()
   }
 
   test("add external relation using hint") {

@@ -2,7 +2,7 @@
 package org.apache.sql.runner.command
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.spark.sql.util.Logging
+import org.apache.spark.sql.util.{Logging, StringUtil}
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
@@ -49,12 +49,8 @@ abstract class BaseCommand(sourceChars: SourceChars) extends Logging {
       }
     }
     assert(index >= 0, s"Parse Job Error!\n${new String(chars.slice(sourceChars.start, sourceChars.end))}")
-    var res = new String(chars.slice(sourceChars.start, index)).trim
-    for ((startChars, endChars) <- escapeMapping
-         if res.startsWith(new String(startChars)) && res.endsWith(new String(endChars))) {
-      res = StringUtils.removeStart(res, new String(startChars))
-      res = StringUtils.removeEnd(res, new String(endChars)).trim
-    }
+    val res =
+      StringUtil.escapeStringValue(new String(chars.slice(sourceChars.start, index)))
     val nextStart = i + 1
     (res, index, nextStart)
   }
