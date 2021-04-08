@@ -49,6 +49,7 @@ class InsightSessionStateBuilder(session: SparkSession, parentState: Option[Sess
         WindowsSubstitution,
         EliminateUnions,
         new SubstituteUnresolvedOrdinals(conf)),
+      Batch("ExternalRelationDDL", Once, ExternalTableRule(session)),
       Batch("Resolution", fixedPoint,
         ResolveTableValuedFunctions ::
           ResolveNamespace(catalogManager) ::

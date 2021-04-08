@@ -43,7 +43,7 @@ class KafkaSinkRelationProvider
   override def createRelation(sqlContext: SQLContext,
                               parameters: Map[String, String],
                               schema: StructType): BaseRelation = {
-    KafkaSinkRelation(schema, KafkaOptions(parameters))(sqlContext.sparkSession)
+    KafkaSinkRelation(schema, KafkaOptions("", parameters))(sqlContext.sparkSession)
   }
 
   override def shortName(): String = "kafka_sink"

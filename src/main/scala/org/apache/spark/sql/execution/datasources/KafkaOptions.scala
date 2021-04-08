@@ -15,20 +15,18 @@ import scala.reflect.ClassTag
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2020-07-13.
  */
-case class KafkaOptions(config: Map[String, String]) {
-  val tag: String = config.getOrElse("tag", "kafka")
-  val recordType: String = config("recordType")
-  val bootstrapServers = config(s"${tag}.bootstrap.servers")
-  val topic = config("kafkaTopic")
-  val viewName = topic.replaceAll("-", "_")
-  val schemaRegistryUrl = config.getOrElse(s"${tag}.schema.registry.url", "")
+case class KafkaOptions(name: String, config: Map[String, String]) extends Serializable {
+  val bootstrapServers = config(s"kafka.bootstrap.servers")
+  val schemaRegistryUrl = config.getOrElse(s"kafka.schema.registry.url", "")
 
-  val avroName = config.getOrElse("avro.name", "")
-  val avroNamespace = config.getOrElse("avro.namespace", "")
-  val fieldMapping = config.getOrElse("avro.fieldMapping", "")
-  val avroForceCreate = config.getOrElse("avro.forceCreate", "false")
+  val topic = config(s"kafka.${name}.kafkaTopic")
+  val recordType: String = config(s"kafka.${name}.recordType")
+  val avroName = config.getOrElse(s"kafka.${name}.avro.name", "")
+  val avroNamespace = config.getOrElse(s"kafka.${name}.avro.namespace", "")
+  val fieldMapping = config.getOrElse(s"kafka.${name}.avro.fieldMapping", "")
+  val avroForceCreate = config.getOrElse(s"kafka.${name}.avro.forceCreate", "false")
 
-  val maxRatePerPartition = config.getOrElse("maxRatePerPartition", "10000000").toInt
+  val maxRatePerPartition = config.getOrElse(s"kafka.${name}.maxRatePerPartition", "10000000").toInt
 
   lazy val fieldMappingMap = {
     val objectMapper = new ObjectMapper

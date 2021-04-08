@@ -20,7 +20,6 @@ import org.apache.sql.runner.metrics.ReporterTrait
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-import scala.util.Random
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>
@@ -36,8 +35,6 @@ case class KafkaSinkRelation(override val schema: StructType,
   import kafkaOptions._
 
   override def sqlContext: SQLContext = sparkSession.sqlContext
-
-  lazy val rand = new Random()
 
   lazy val avroSchema: Schema = {
     if (isNotBlank(avroForceCreate) && avroForceCreate.toBoolean) {

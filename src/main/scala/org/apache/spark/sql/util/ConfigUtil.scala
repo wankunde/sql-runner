@@ -1,6 +1,7 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
 package org.apache.spark.sql.util
 
+import org.apache.spark.sql.SparkSession
 import org.apache.sql.runner.container.ConfigContainer
 
 /**
@@ -23,11 +24,19 @@ object ConfigUtil {
   }
 
   def withConfigs[T](configs: (String, String)*)(func: => T): T = {
+    val spark = SparkSession.active
     try {
-      configs.foreach(config => ConfigContainer :+ (config._1 -> config._2))
+      configs.foreach(config => {
+        ConfigContainer :+ (config._1 -> config._2)
+        spark.conf.set(config._1, config._2)
+      })
+
       func
     } finally {
-      configs.foreach(config => ConfigContainer - config._1)
+      configs.foreach(config => {
+        ConfigContainer - config._1
+        spark.conf.unset(config._1)
+      })
     }
   }
 }

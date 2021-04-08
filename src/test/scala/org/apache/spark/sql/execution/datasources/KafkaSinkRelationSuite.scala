@@ -27,7 +27,7 @@ class KafkaSinkRelationSuite extends SparkSqlRunnerBase with Matchers {
 
   test("ensure the columns's order in avro schema is the same as dataframe schema") {
     val dfSchema = StructType.fromDDL("id int, is_student boolean, name string")
-    val kafkaOptions = KafkaOptions(Map("tag" -> "kafka",
+    val kafkaOptions = KafkaOptions("", Map("tag" -> "kafka",
       "recordType" -> "avro",
       "kafka.bootstrap.servers" -> "$bootstrapServers",
       "kafka.schema.registry.url" -> "$schemaRegistryUrl",
