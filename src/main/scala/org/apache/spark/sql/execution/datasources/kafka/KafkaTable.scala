@@ -5,8 +5,7 @@ import java.util
 
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.catalog.{Identifier, SupportsWrite, Table, TableCapability}
-import org.apache.spark.sql.connector.write.{BatchWrite, DataWriter, DataWriterFactory, LogicalWriteInfo, PhysicalWriteInfo, WriteBuilder, WriterCommitMessage}
-import org.apache.spark.sql.execution.datasources.KafkaOptions
+import org.apache.spark.sql.connector.write._
 import org.apache.spark.sql.types.StructType
 import org.apache.sql.runner.container.ConfigContainer
 

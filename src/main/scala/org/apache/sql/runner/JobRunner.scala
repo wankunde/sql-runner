@@ -38,7 +38,7 @@ object JobRunner extends ArgParser with Logging {
 
   def prepareRuntimeParameter(): Unit = {
     // prepare for spark mode
-    val distJars = Seq("sql-runner-2.0.jar").map(jar => s"lib/${jar}").mkString(",")
+    val distJars = Seq("sql-runner-2.1.jar").map(jar => s"lib/${jar}").mkString(",")
     ConfigContainer :+ ("spark.yarn.dist.jars" -> distJars)
     if (!ConfigContainer.contains("spark.yarn.queue")) {
       ConfigContainer :+ ("spark.yarn.queue" -> s"root.${File(jobFile).parent.name}")

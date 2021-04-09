@@ -14,11 +14,11 @@ import org.scalatest.Matchers
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2020-09-15.
  */
-class ExternalRelationRuleSuite extends QueryTest with SQLTestUtils with Matchers {
+class ExternalTableRuleSuite extends QueryTest with SQLTestUtils with Matchers {
 
   override val spark = {
     System.setProperty("spark.master", "local[1]")
-    SparkSqlRunner.sparkSession(Some("ExternalRelationRuleSuite"))
+    SparkSqlRunner.sparkSession(Some("ExternalTableRuleSuite"))
   }
 
   val testPath = getClass.getResource("/")
@@ -85,7 +85,7 @@ class ExternalRelationRuleSuite extends QueryTest with SQLTestUtils with Matcher
     }
   }
 
-  test("write data frame to mysql table using JDBC_SINK") {
+  test("write data frame to mysql table") {
     ConfigUtil.withConfigs(
       "mysql.stu.queryTimeout" -> 100.toString,
       "mysql.stu.uniqueKeys" -> "id"

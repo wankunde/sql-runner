@@ -1,5 +1,5 @@
 // Copyright 2019 Leyantech Ltd. All Rights Reserved.
-package org.apache.spark.sql.execution.datasources
+package org.apache.spark.sql.execution.datasources.kafka
 
 import java.util.Properties
 
@@ -8,8 +8,9 @@ import io.confluent.kafka.serializers.{AbstractKafkaAvroSerDeConfig, KafkaAvroSe
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig}
 import org.apache.kafka.common.serialization.StringSerializer
 
-import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+
+import scala.collection.JavaConverters._
 
 /**
  * @author kun.wan, <kun.wan@leyantech.com>

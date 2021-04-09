@@ -1,2 +1,0 @@
-org.apache.spark.sql.execution.datasources.JdbcUpsertRelationProvider
-org.apache.spark.sql.execution.datasources.KafkaSinkRelationProvider

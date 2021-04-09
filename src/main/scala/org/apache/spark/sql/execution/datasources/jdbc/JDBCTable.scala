@@ -8,8 +8,7 @@ import org.apache.spark.sql.connector.catalog._
 import org.apache.spark.sql.connector.read.ScanBuilder
 import org.apache.spark.sql.connector.write.{LogicalWriteInfo, WriteBuilder}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.util.{CaseInsensitiveStringMap, SystemVariables}
-import org.apache.spark.sql.util.SystemVariables._
+import org.apache.spark.sql.util.CaseInsensitiveStringMap
 import org.apache.sql.runner.container.ConfigContainer
 
 import scala.collection.JavaConverters._

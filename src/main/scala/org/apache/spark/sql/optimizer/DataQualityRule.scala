@@ -3,14 +3,12 @@ package org.apache.spark.sql.optimizer
 
 import java.util.Locale
 
-import org.apache.commons.lang3.StringUtils
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.expressions.Literal
 import org.apache.spark.sql.catalyst.parser.CatalystSqlParser
-import org.apache.spark.sql.{Column, SparkSession}
 import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, Project, UnresolvedHint}
 import org.apache.spark.sql.catalyst.rules.Rule
-import org.apache.spark.sql.connector.expressions.LogicalExpressions
+import org.apache.spark.sql.{Column, SparkSession}
 import org.apache.spark.util.IdGenerator
 import org.apache.sql.runner.callback.{DataCallBackFactory, DataCheckCallBack}
 

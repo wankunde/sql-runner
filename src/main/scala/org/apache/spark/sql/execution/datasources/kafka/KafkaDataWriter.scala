@@ -14,7 +14,6 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.connector.write.{DataWriter, WriterCommitMessage}
-import org.apache.spark.sql.execution.datasources.KafkaOptions
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.util.{AvroField, GenericAvroSchema, Logging}
 
