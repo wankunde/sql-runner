@@ -75,7 +75,8 @@ class ArgParser {
     }
 
     commands = CommandFactory.parseCommands(Source.fromFile(jobFile).mkString)
-    assert(commands.length > 0 && commands(0).isInstanceOf[BlockCommentCommand])
+    require(commands.length > 0 && commands(0).isInstanceOf[BlockCommentCommand],
+      "sql job must start with job description!")
     checkHeader(commands(0).asInstanceOf[BlockCommentCommand])
 
     // pull variables from apollo
