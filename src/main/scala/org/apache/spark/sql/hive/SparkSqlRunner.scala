@@ -143,6 +143,10 @@ object SparkSqlRunner extends Logging {
       sparkConf.set("spark.executor.memory", "2g")
       sparkConf.set("spark.executor.memoryOverhead", "1g")
 
+      // enable datasource v2 for kafka and jdbc
+      sparkConf.set("spark.sql.catalog.jdbc", "org.apache.spark.sql.execution.datasources.jdbc.JDBCCatalog")
+      sparkConf.set("spark.sql.catalog.kafka", "org.apache.spark.sql.execution.datasources.kafka.KafkaCatalog")
+
       ConfigContainer.valueMap.get
         .filter(config => config._1.startsWith("spark"))
         .foreach(config => sparkConf.set(config._1, config._2))

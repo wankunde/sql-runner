@@ -26,7 +26,8 @@ class InsightSessionStateBuilder(session: SparkSession, parentState: Option[Sess
    * A logical query plan `Analyzer` with rules specific for Insight.
    *
    * Added Rules:
-   *   ExternalRelationRule
+   *   ExternalSinkRule
+   *   ExternalTableRule
    *
    * Deleted Rules:
    */
@@ -38,7 +39,7 @@ class InsightSessionStateBuilder(session: SparkSession, parentState: Option[Sess
       Batch("Hints", fixedPoint,
         new ResolveHints.ResolveJoinStrategyHints(conf),
         new ResolveHints.ResolveCoalesceHints(conf),
-        ExternalRelationRule(session),
+        ExternalSinkRule(session),
         CollectValueRule,
         DataQualityRule(session)
       ),
@@ -49,6 +50,7 @@ class InsightSessionStateBuilder(session: SparkSession, parentState: Option[Sess
         WindowsSubstitution,
         EliminateUnions,
         new SubstituteUnresolvedOrdinals(conf)),
+      Batch("ExternalTable", Once, ExternalTableRule(session)),
       Batch("Resolution", fixedPoint,
         ResolveTableValuedFunctions ::
           ResolveNamespace(catalogManager) ::

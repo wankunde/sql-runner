@@ -144,7 +144,7 @@ SELECT /*+ COLLECT_VALUE('row_count2', 'd') */ count(1) as d;
 
 # 高级功能说明
 
-* [SQL命令中的Hint扩展](./docs/External_Hints.md)
+* [外部数据源的读写](docs/External_Sources.md)
 * [数据质量告警](./docs/Data_Check.md)
 * [Hive表数据写入时排序索引](./docs/Index_Column.md)
 * [Trouble Shooting](./docs/Trouble_Shooting.md)
@@ -161,4 +161,4 @@ SELECT /*+ COLLECT_VALUE('row_count2', 'd') */ count(1) as d;
 
 * 注释掉pom中的 `hive-cli` 和 `hive-exec`两个依赖的provide依赖
 * 在resource目录下补充hdfs，yarn，hive的访问配置文件
-* 启动 `org.apache.sql.runner.JobRunner` 程序，启动参数填写 `env.xml` 和 `job.xml` .
+* 启动 `org.apache.sql.runner.JobRunner` 程序

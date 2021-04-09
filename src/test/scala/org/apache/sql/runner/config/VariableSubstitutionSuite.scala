@@ -89,5 +89,13 @@ class VariableSubstitutionSuite extends FunSuite with Matchers {
 
     substitution.substitute("!set key1 = ${key1, \"DEFAULT_VALUE1\"};") should
       equal("!set key1 = DEFAULT_VALUE1;")
+
+    ConfigContainer :+ ("key1" -> "value1")
+
+    substitution.substitute("!set key1 = ${key1, 'DEFAULT_VALUE1'};") should
+      equal("!set key1 = value1;")
+
+    substitution.substitute("!set key1 = ${key1, \"DEFAULT_VALUE1\"};") should
+      equal("!set key1 = value1;")
   }
 }

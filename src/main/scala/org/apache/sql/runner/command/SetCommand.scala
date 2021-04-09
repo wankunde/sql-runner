@@ -18,21 +18,19 @@ case class SetCommand(sourceChars: SourceChars) extends BaseCommand(sourceChars)
 
   val (key, _, valueStart) = readTo('=')
   sourceChars.start = valueStart
-  val (value, _, nextStart) =
-    readTo(';') match {
-      case (value, index, nextStart) =>
-        val substitutionValue =
-          VariableSubstitution.withSubstitution { substitution =>
-            substitution.substitute(value)
-          }
-        (substitutionValue, index, nextStart)
-    }
+
+  val (value, _, nextStart) = readTo(';')
   sourceChars.start = nextStart
 
   override def toString: String = s"${CommandFactory.setPrefix} $key = $value;"
 
   override def run(): Unit = {
-    ConfigContainer :+ (key -> value)
-    logInfo(s"\n${this.toString}")
+    val substitutionValue =
+      VariableSubstitution.withSubstitution { substitution =>
+        substitution.substitute(value)
+      }
+
+    ConfigContainer :+ (key -> substitutionValue)
+    logInfo(s"\n${CommandFactory.setPrefix} $key = $substitutionValue;")
   }
 }

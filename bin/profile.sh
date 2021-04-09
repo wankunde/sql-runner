@@ -13,7 +13,7 @@ fi
 cmd=$1
 shift
 if [ "${cmd}" == "executor" ];then
-  exec "${JAVA_HOME}"/bin/java -cp ./sql-runner-2.0.jar one.profiler.ProfileAgent
+  exec "${JAVA_HOME}"/bin/java -cp ./sql-runner-2.1.jar one.profiler.ProfileAgent
   exit 0
 elif [ "${cmd}" == "upload" ]; then
   sleep 1s
