@@ -7,6 +7,7 @@ import org.apache.spark.internal.Logging
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.connector.read._
 import org.apache.spark.sql.jdbc.JdbcDialects
+import org.apache.spark.sql.sources.Filter
 import org.apache.spark.sql.types.StructType
 
 import scala.collection.JavaConverters._
@@ -16,8 +17,31 @@ import scala.util.control.NonFatal
  * @author kun.wan, <kun.wan@leyantech.com>
  * @date 2021-04-07.
  */
-class JDBCScanBuilder(schema: StructType, options: MyJDBCOptions) extends ScanBuilder {
-  override def build(): Scan = new JDBCScan(schema, options)
+class JDBCScanBuilder(schema: StructType, options: MyJDBCOptions)
+  extends ScanBuilder with SupportsPushDownFilters {
+
+  override def build(): Scan = {
+    options.filterWhereClause =
+      _pushedFilters
+        .flatMap(JDBCRDD.compileFilter(_, JdbcDialects.get(options.url)))
+        .map(p => s"($p)").mkString(" AND ")
+
+    new JDBCScan(schema, options)
+  }
+
+  private var _pushedFilters: Array[Filter] = Array.empty
+
+  override def pushFilters(filters: Array[Filter]): Array[Filter] = {
+    if (options.pushDownPredicate) {
+      val fieldNames = schema.fields.map(_.name).toSet
+      _pushedFilters = filters.filter(_.references.forall(fieldNames.contains(_)))
+    }
+
+    // return all origin filters for some filters may failed to compile
+    filters
+  }
+
+  override def pushedFilters(): Array[Filter] = _pushedFilters
 }
 
 class JDBCScan(schema: StructType, options: MyJDBCOptions) extends Scan {
@@ -90,15 +114,23 @@ class JDBCPartitionReader(schema: StructType,
     // H2's JDBC driver does not support the setSchema() method.  We pass a
     // fully-qualified table name in the SELECT statement.  I don't know how to
     // talk about a table in a completely portable way.
-    val myWhereClause =
+    val whereClause =
     if (partitionId == 0) {
-      s"WHERE crc32(${partitionColumn.get}) % ${numPartitions.get} = $partitionId " +
-        s"or ${partitionColumn.get} is null"
+      s"WHERE (crc32(${partitionColumn.get}) % ${numPartitions.get} = $partitionId " +
+        s"or ${partitionColumn.get} is null)"
     } else {
-      s"WHERE crc32(${partitionColumn.get}) % ${numPartitions.get} = $partitionId"
+      s"WHERE (crc32(${partitionColumn.get}) % ${numPartitions.get} = $partitionId)"
     }
 
-    val sqlText = s"SELECT * FROM ${options.tableOrQuery} $myWhereClause"
+    val filterWhereClause =
+      if (options.filterWhereClause.length > 0) {
+        whereClause + " AND " + options.filterWhereClause
+      } else {
+        whereClause
+      }
+
+    val sqlText = s"SELECT * FROM ${options.tableOrQuery} $filterWhereClause"
+    logInfo(s"Execute jdbc query: $sqlText")
     val stmt: PreparedStatement =
       conn.prepareStatement(sqlText,
         ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)

@@ -8,7 +8,7 @@ import org.apache.spark.sql.connector.catalog._
 import org.apache.spark.sql.connector.read.ScanBuilder
 import org.apache.spark.sql.connector.write.{LogicalWriteInfo, WriteBuilder}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.util.CaseInsensitiveStringMap
+import org.apache.spark.sql.util.{CaseInsensitiveStringMap, Logging}
 import org.apache.sql.runner.container.ConfigContainer
 
 import scala.collection.JavaConverters._
@@ -24,7 +24,8 @@ import scala.collection.mutable
  */
 case class JDBCTable(ident: Identifier) extends Table
   with SupportsRead
-  with SupportsWrite {
+  with SupportsWrite
+  with Logging {
 
   import MyJDBCOptions._
 
