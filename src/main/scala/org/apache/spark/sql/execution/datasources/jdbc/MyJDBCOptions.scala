@@ -12,7 +12,7 @@ import org.apache.spark.sql.catalyst.util.CaseInsensitiveMap
  *
  *      Spark内置的JDBCOptions 不会序列化用户传入的自定义属性，所以直接自己干
  */
-class MyJDBCOptions(@transient override val parameters: CaseInsensitiveMap[String])
+case class MyJDBCOptions(@transient override val parameters: CaseInsensitiveMap[String])
   extends JDBCOptions(parameters) {
 
   import JDBCOptions._
@@ -31,6 +31,9 @@ class MyJDBCOptions(@transient override val parameters: CaseInsensitiveMap[Strin
       s"Option '$JDBC_QUERY_STRING' is not applicable while writing.")
 
   val uniqueKeys = parameters.getOrElse(MyJDBCOptions.JDBC_UNIQUE_KEYS, "")
+
+  var filterWhereClause = parameters.getOrElse(MyJDBCOptions.JDBC_FILTER_WHERE_CLAUSE, "")
+
 }
 
 object MyJDBCOptions {
@@ -62,5 +65,6 @@ object MyJDBCOptions {
   val JDBC_SESSION_INIT_STATEMENT = newOption("sessionInitStatement")
   val JDBC_PUSHDOWN_PREDICATE = newOption("pushDownPredicate")
   val JDBC_UNIQUE_KEYS = newOption("uniqueKeys")
+  val JDBC_FILTER_WHERE_CLAUSE = newOption("filterWhereClause")
 
 }

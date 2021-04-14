@@ -64,8 +64,10 @@ class ExternalTableRuleSuite extends QueryTest with SQLTestUtils with Matchers {
       val df = spark.sql(
         s"""SELECT id, name
            |FROM jdbc.mysql.stu
+           |where id < 10
            |""".stripMargin)
       df.rdd.partitions.length should equal(3)
+      df.explain()
       df.show()
     }
   }
